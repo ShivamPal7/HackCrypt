@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
@@ -44,9 +44,15 @@ export function VerifyEmailScreen() {
         }
     };
 
+    const { userType } = useLocalSearchParams();
+
     const handleVerify = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        router.push("/registration-success");
+        if (userType === "student") {
+            router.push("/student-details");
+        } else {
+            router.push("/registration-success");
+        }
     };
 
     const handleResend = () => {
@@ -95,7 +101,7 @@ export function VerifyEmailScreen() {
                             {otp.map((digit, index) => (
                                 <View key={index} className="relative">
                                     <TextInput
-                                        ref={(ref) => (inputRefs.current[index] = ref)}
+                                        ref={(ref) => { inputRefs.current[index] = ref; }}
                                         className={`w-[72px] h-[72px] rounded-2xl border-2 text-center text-3xl font-sora-regular bg-[#121823] text-foreground focus:border-primary border-input`}
                                         style={{ lineHeight: 32 }} // Fix Android vertical alignment
                                         maxLength={1}

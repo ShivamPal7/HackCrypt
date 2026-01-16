@@ -21,7 +21,7 @@ export function SignupScreen() {
 
     const handleSignUp = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        router.push("/verify-email");
+        router.push({ pathname: "/verify-email", params: { userType } });
     };
 
     const handleUserTypeChange = (type: string) => {
