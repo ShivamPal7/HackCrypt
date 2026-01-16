@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LockIcon, UserIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Login() {
   const navigate = useNavigate();
-  const [role, setRole] = useState("admin");
+  const [searchParams] = useSearchParams();
+  const roleParam = searchParams.get("role");
+  const initialRole = roleParam === "teacher" ? "teacher" : "admin";
+  const [role, setRole] = useState(initialRole);
+
+  useEffect(() => {
+    setRole(initialRole);
+  }, [initialRole]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,18 +36,24 @@ export default function Login() {
         </CardHeader>
         <form onSubmit={handleLogin} className="pt-2">
           <CardContent className="space-y-4 px-10 pb-10">
-            <div className="space-y-1.5">
-              <Label htmlFor="role" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select Role</Label>
-              <Select defaultValue="admin" onValueChange={setRole}>
-                <SelectTrigger className="h-10 bg-background border-border rounded-md focus:ring-primary text-sm">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent className="rounded-md border-border shadow-md">
-                  <SelectItem value="admin">Administrator Staff</SelectItem>
-                  <SelectItem value="teacher">Faculty Member</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="space-y-1.5 pb-2">
+              <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Access Mode</Label>
+              <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-md">
+                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/80">
+                  {role === "teacher" ? "Signing in as Faculty Member" : "Create an Admin Account"}
+                </span>
+              </div>
             </div>
+            {role === "admin" && (
+              <div className="space-y-1.5">
+                <Label htmlFor="fullname" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Full Name</Label>
+                <div className="relative">
+                  <Input id="fullname" placeholder="Enter full name" className="pl-9 h-10 bg-background border-border rounded-md focus:ring-primary text-sm" />
+                  <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Email</Label>
               <div className="relative">
@@ -69,19 +81,21 @@ export default function Login() {
             </div>
             <div className="pt-2">
               <Button className="w-full h-10 bg-primary text-primary-foreground font-medium uppercase tracking-widest rounded-md shadow-sm hover:opacity-90 transition-opacity" type="submit">
-                Login
+                {role === "admin" ? "Register" : "Login"}
               </Button>
-              <div className="mt-6 text-center">
-                <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
-                  Don't have an account?{" "}
-                  <span
-                    className="text-primary/80 hover:text-primary cursor-pointer underline transition-colors"
-                    onClick={() => navigate("/signup")}
-                  >
-                    Sign Up
-                  </span>
-                </p>
-              </div>
+              {role === "teacher" && (
+                <div className="mt-6 text-center">
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                    Don't have an account?{" "}
+                    <span
+                      className="text-primary/80 hover:text-primary cursor-pointer underline transition-colors"
+                      onClick={() => navigate("/signup?role=teacher")}
+                    >
+                      Sign Up
+                    </span>
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </form>

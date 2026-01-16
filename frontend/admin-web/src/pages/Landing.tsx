@@ -18,8 +18,6 @@ export default function Landing() {
     return (
         <div className="min-h-screen bg-background text-foreground selection:bg-primary/10 selection:text-primary">
             <Navbar />
-
-            {/* Hero Section */}
             <section className="pt-28 pb-16 bg-card border-b border-border">
                 <div className="container mx-auto px-6">
                     <div className="max-w-4xl mx-auto text-center space-y-6 py-20">
@@ -33,26 +31,24 @@ export default function Landing() {
                         <p className="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
                             A centralized geofencing platform for schools and colleges to streamline record keeping, verify presence, and generate certified academic reports.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
+                        <div className="flex justify-center gap-4 pt-8">
                             <Button
-                                onClick={() => navigate("/login")}
-                                className="h-11 px-8 bg-primary hover:opacity-90 text-primary-foreground rounded-md shadow-sm text-sm font-medium"
+                                onClick={() => navigate("/create-institute")}
+                                className="h-11 px-12 bg-primary hover:opacity-90 text-primary-foreground rounded-md shadow-sm text-sm font-medium uppercase tracking-wider"
                             >
-                                Administrator Access
+                                Create an Institute
                             </Button>
                             <Button
-                                onClick={() => navigate("/login")}
                                 variant="outline"
-                                className="h-11 px-8 border-border text-foreground hover:bg-muted/50 rounded-md text-sm font-medium"
+                                onClick={() => navigate("/login?role=teacher")}
+                                className="h-11 px-12 border-border text-foreground hover:bg-muted/50 rounded-md text-sm font-medium uppercase tracking-wider"
                             >
-                                Faculty Portal
+                                Faculty Login
                             </Button>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Problem/Solution Section */}
             <section className="py-20 bg-background">
                 <div className="container mx-auto px-6">
                     <div className="grid md:grid-cols-2 gap-16 items-start max-w-5xl mx-auto">
@@ -91,8 +87,6 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
-
-            {/* Features Registry */}
             <section className="py-20 bg-card border-y border-border">
                 <div className="container mx-auto px-6 space-y-12">
                     <div className="text-center space-y-3">
@@ -121,8 +115,6 @@ export default function Landing() {
                     </div>
                 </div>
             </section>
-
-            {/* Footer */}
             <footer className="py-12 bg-background border-t border-border mt-auto">
                 <div className="container mx-auto px-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-8">

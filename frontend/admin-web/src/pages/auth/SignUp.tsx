@@ -1,21 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { LockIcon, UserIcon, MailIcon, BadgeCheckIcon, EyeIcon, EyeOffIcon } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function SignUp() {
     const navigate = useNavigate();
-    const [role, setRole] = useState("admin");
+    const [searchParams] = useSearchParams();
+    const roleParam = searchParams.get("role");
+    const [role, setRole] = useState(roleParam === "admin" ? "admin" : "teacher");
     const [showPassword, setShowPassword] = useState(false);
+
+    useEffect(() => {
+        // Enforce faculty role if not explicitly admin (though admins should use the other flow)
+        if (roleParam !== "admin") {
+            setRole("teacher");
+        } else {
+            setRole("admin");
+        }
+    }, [roleParam]);
 
     const handleSignUp = (e: React.FormEvent) => {
         e.preventDefault();
         console.log("Sign up attempt as:", role);
         localStorage.setItem("userRole", role);
-        navigate("/login");
+        navigate(`/login?role=${role}`);
     };
 
     return (
@@ -23,36 +34,22 @@ export default function SignUp() {
             <Card className="w-full max-w-md border-border bg-card shadow-sm rounded-lg overflow-hidden">
                 <div className="h-1 bg-primary/30 w-full" />
                 <CardHeader className="space-y-1 text-center pt-10">
-                    <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">Create Account</CardTitle>
+                    <CardTitle className="font-heading text-2xl font-bold tracking-tight text-foreground">
+                        {role === "teacher" ? "Create Faculty Account" : "Create Account"}
+                    </CardTitle>
                     <CardDescription className="text-muted-foreground text-[10px] uppercase font-bold tracking-widest">
                         Institutional Registration Portal
                     </CardDescription>
                 </CardHeader>
                 <form onSubmit={handleSignUp} className="pt-2">
                     <CardContent className="space-y-4 px-10 pb-10">
-                        <div className="space-y-1.5">
-                            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Select Role</Label>
-                            <div className="grid grid-cols-2 gap-2 p-1 bg-muted/50 rounded-md border border-border">
-                                <button
-                                    type="button"
-                                    onClick={() => setRole("admin")}
-                                    className={`py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${role === "admin"
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "text-muted-foreground hover:bg-muted"
-                                        }`}
-                                >
-                                    ADMIN
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setRole("teacher")}
-                                    className={`py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all ${role === "teacher"
-                                        ? "bg-primary text-primary-foreground shadow-sm"
-                                        : "text-muted-foreground hover:bg-muted"
-                                        }`}
-                                >
-                                    TEACHER
-                                </button>
+                        <div className="space-y-1.5 pb-2">
+                            <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Access Mode</Label>
+                            <div className="flex items-center gap-2 px-3 py-2 bg-secondary/30 border border-border rounded-md">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-foreground/80">
+                                    {role === "teacher" ? "Create an Account as Faculty Member" : "Create an Account as Administrator"}
+                                </span>
                             </div>
                         </div>
 
@@ -112,7 +109,7 @@ export default function SignUp() {
                                     Already have an account?{" "}
                                     <span
                                         className="text-primary/80 hover:text-primary cursor-pointer underline transition-colors"
-                                        onClick={() => navigate("/login")}
+                                        onClick={() => navigate(`/login?role=${role}`)}
                                     >
                                         Log In
                                     </span>

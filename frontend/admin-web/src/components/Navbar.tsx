@@ -23,7 +23,7 @@ export function Navbar() {
                     <Button variant="ghost" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors h-8 px-3">
                         How It Works
                     </Button>
-                    <Link to="/login">
+                    <Link to="/login?role=admin">
                         <Button className="bg-primary hover:opacity-90 text-primary-foreground rounded-md px-6 py-2 h-9 text-sm font-medium ml-4">
                             Staff Portal
                         </Button>
