@@ -5,10 +5,260 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+//////////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////////
+
+enum Role {
+  ORGANISATION
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum SessionStatus {
+  UPCOMING
+  ACTIVE
+  CLOSED
+  CANCELLED
+}
+
+enum DevicePlatform {
+  ANDROID
+  IOS
+  WEB
+}
+
+enum OverrideReason {
+  MEDICAL
+  TECHNICAL_ISSUE
+  LATE_ENTRY
+  MANUAL_CORRECTION
+  OTHER
+}
+
+enum VerificationResult {
+  PASSED
+  FAILED
+}
+
+//////////////////////////////////////////////////////
+// CORE MODELS
+//////////////////////////////////////////////////////
+
+model User {
+  id    String @id @default(uuid())
+  email String @unique
+  name  String
+  age   Int?
+  role  Role
+  password String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Organisation membership
+  organisations UserOrganisation[]
+
+  // Teaching relations
+  taughtDepartments Department[] @relation("DepartmentTeachers")
+  taughtClasses     Class[]      @relation("ClassTeacher")
+
+  // Student relations
+  classes             Class[]              @relation("ClassStudents")
+  attendances         Attendance[]
+  devices             Device[]
+  subjects            Subject[]
+  attendanceOverrides AttendanceOverride[]
+}
+
+model Organisation {
+  id   String @id @default(uuid())
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  users       UserOrganisation[]
+  departments Department[]
+  classes     Class[]
+  subjects    Subject[]
+  sessions    AttendanceSession[]
+  attendances Attendance[]
+}
+
+model UserOrganisation {
+  id             String @id @default(uuid())
+  userId         String
+  organisationId String
+
+  user         User         @relation(fields: [userId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+
+  @@unique([userId, organisationId])
+}
+
+//////////////////////////////////////////////////////
+// ACADEMIC STRUCTURE
+//////////////////////////////////////////////////////
+
+model Department {
+  id   String @id @default(uuid())
+  name String
+
+  organisationId String
+  organisation   Organisation @relation(fields: [organisationId], references: [id])
+
+  teachers User[]  @relation("DepartmentTeachers")
+  classes  Class[]
+
+  createdAt DateTime @default(now())
+}
+
+model Class {
+  id   String @id @default(uuid())
+  name String
+
+  organisationId String
+  departmentId   String
+  teacherId      String
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  department   Department   @relation(fields: [departmentId], references: [id])
+  teacher      User         @relation("ClassTeacher", fields: [teacherId], references: [id])
+
+  students User[]              @relation("ClassStudents")
+  subjects Subject[]
+  sessions AttendanceSession[]
+
+  createdAt DateTime @default(now())
+}
+
+model Subject {
+  id   String @id @default(uuid())
+  name String
+
+  organisationId String
+  classId        String
+  teacherId      String
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  class        Class        @relation(fields: [classId], references: [id])
+  teacher      User         @relation(fields: [teacherId], references: [id])
+
+  sessions AttendanceSession[]
+
+  createdAt DateTime @default(now())
+}
+
+//////////////////////////////////////////////////////
+// ATTENDANCE FLOW
+//////////////////////////////////////////////////////
+
+model AttendanceSession {
+  id String @id @default(uuid())
+
+  organisationId String
+  classId        String
+  subjectId      String
+
+  startTime DateTime
+  endTime   DateTime
+  status    SessionStatus
+
+  organisation Organisation @relation(fields: [organisationId], references: [id])
+  class        Class        @relation(fields: [classId], references: [id])
+  subject      Subject      @relation(fields: [subjectId], references: [id])
+
+  attendances Attendance[]
+
+  createdAt DateTime @default(now())
+}
+
+model Attendance {
+  id String @id @default(uuid())
+
+  studentId      String
+  sessionId      String
+  organisationId String
+  deviceId       String?
+
+  status AttendanceStatus
+
+  deviceVerified Boolean
+  faceVerified   Boolean
+
+  student      User              @relation(fields: [studentId], references: [id])
+  session      AttendanceSession @relation(fields: [sessionId], references: [id])
+  organisation Organisation      @relation(fields: [organisationId], references: [id])
+  device       Device?           @relation(fields: [deviceId], references: [id])
+
+  faceCheck FaceVerification?
+  override  AttendanceOverride?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([studentId, sessionId])
+}
+
+//////////////////////////////////////////////////////
+// SECURITY & VERIFICATION
+//////////////////////////////////////////////////////
+
+model Device {
+  id String @id @default(uuid())
+
+  userId     String
+  deviceHash String         @unique
+  platform   DevicePlatform
+
+  registeredAt DateTime  @default(now())
+  lastUsedAt   DateTime?
+
+  user        User         @relation(fields: [userId], references: [id])
+  attendances Attendance[]
+}
+
+model FaceVerification {
+  id String @id @default(uuid())
+
+  attendanceId    String             @unique
+  result          VerificationResult
+  confidenceScore Float?
+
+  attendance Attendance @relation(fields: [attendanceId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model AttendanceOverride {
+  id String @id @default(uuid())
+
+  attendanceId   String @unique
+  overriddenById String
+
+  reason OverrideReason
+  notes  String?
+
+  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+  overriddenBy User       @relation(fields: [overriddenById], references: [id])
+
+  createdAt DateTime @default(now())
 }
