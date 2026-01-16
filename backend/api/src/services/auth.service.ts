@@ -5,12 +5,12 @@ import env from '../config/env';
 import ApiError from '../utils/ApiError';
 import { Role, User } from '@prisma/client';
 
-const generateTokens = (user: { id: string; role: Role; email: string }) => {
+const generateTokens = (user: { id: string; role: Role; email: string; institutionId: string | null }) => {
     const accessOptions: SignOptions = { expiresIn: env.JWT_EXPIRES_IN as any };
     const refreshOptions: SignOptions = { expiresIn: env.JWT_REFRESH_EXPIRES_IN as any };
 
     const accessToken = jwt.sign(
-        { id: user.id, role: user.role, email: user.email },
+        { id: user.id, role: user.role, email: user.email, institutionId: user.institutionId },
         env.JWT_SECRET,
         accessOptions
     );

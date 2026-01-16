@@ -3,7 +3,8 @@ import * as classService from '../services/class.service';
 import { sendResponse } from '../utils/response';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await classService.createClass(req.body);
+    const data = { ...req.body, institutionId: req.user!.institutionId };
+    const result = await classService.createClass(data);
     sendResponse(res, 201, 'Class created successfully', result);
 };
 

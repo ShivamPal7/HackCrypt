@@ -11,7 +11,7 @@ export const createSubject = async (data: any) => {
 export const getSubject = async (id: string) => {
     const subject = await prisma.subject.findUnique({
         where: { id },
-        include: { sessions: true, teacher: true }
+        include: { lectures: true }
     });
     if (!subject) throw new ApiError(404, 'Subject not found');
     return subject;

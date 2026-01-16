@@ -11,7 +11,7 @@ export const createClass = async (data: any) => {
 export const getClass = async (id: string) => {
     const classData = await prisma.class.findUnique({
         where: { id },
-        include: { sessions: true, subjects: true, students: true, teacher: true }
+        include: { lectures: true, subjects: true, students: true, teacher: true }
     });
     if (!classData) throw new ApiError(404, 'Class not found');
     return classData;

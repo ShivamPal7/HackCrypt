@@ -10,9 +10,9 @@ const router = Router();
 
 router.use(authenticate);
 
-router.post('/', authorize([Role.ORGANISATION, Role.ADMIN]), validate(departmentValidator.createDepartmentSchema), asyncHandler(departmentController.create));
-router.get('/:id', authorize([Role.ORGANISATION, Role.ADMIN, Role.TEACHER]), asyncHandler(departmentController.get));
-router.put('/:id', authorize([Role.ORGANISATION, Role.ADMIN]), validate(departmentValidator.updateDepartmentSchema), asyncHandler(departmentController.update));
-router.delete('/:id', authorize([Role.ORGANISATION, Role.ADMIN]), asyncHandler(departmentController.remove));
+router.post('/', authorize([Role.ADMIN]), validate(departmentValidator.createDepartmentSchema), asyncHandler(departmentController.create));
+router.get('/:id', authorize([Role.ADMIN, Role.TEACHER]), asyncHandler(departmentController.get));
+router.put('/:id', authorize([Role.ADMIN]), validate(departmentValidator.updateDepartmentSchema), asyncHandler(departmentController.update));
+router.delete('/:id', authorize([Role.ADMIN]), asyncHandler(departmentController.remove));
 
 export default router;

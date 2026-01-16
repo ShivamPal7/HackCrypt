@@ -3,7 +3,8 @@ import * as subjectService from '../services/subject.service';
 import { sendResponse } from '../utils/response';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await subjectService.createSubject(req.body);
+    const data = { ...req.body, institutionId: req.user!.institutionId };
+    const result = await subjectService.createSubject(data);
     sendResponse(res, 201, 'Subject created successfully', result);
 };
 

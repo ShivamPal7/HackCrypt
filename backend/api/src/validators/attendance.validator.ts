@@ -3,19 +3,21 @@ import { SessionStatus, AttendanceStatus, OverrideReason } from '@prisma/client'
 
 export const createSessionSchema = z.object({
     body: z.object({
-        organisationId: z.string().uuid(),
-        classId: z.string().uuid(),
-        subjectId: z.string().uuid(),
-        startTime: z.string().datetime(),
-        endTime: z.string().datetime(),
+        lectureId: z.string().uuid(),
+        remarks: z.string().optional(),
     }),
 });
 
 export const markAttendanceSchema = z.object({
     body: z.object({
+        lectureId: z.string().uuid(), // Added as per instruction
         sessionId: z.string().uuid(),
-        deviceHash: z.string(), // Student sends hash to prove device ownership
-        faceVerified: z.boolean().optional(), // In real app, this comes from ML service
+        status: z.nativeEnum(AttendanceStatus).optional(),
+        deviceHash: z.string().optional(),
+        faceVerified: z.boolean().optional(),
+        remarks: z.string().optional(),
+        markedVia: z.string().optional(),
+        // sessionId is optional now?
     }),
 });
 

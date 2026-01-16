@@ -3,7 +3,8 @@ import * as departmentService from '../services/department.service';
 import { sendResponse } from '../utils/response';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await departmentService.createDepartment(req.body);
+    const data = { ...req.body, institutionId: req.user!.institutionId };
+    const result = await departmentService.createDepartment(data);
     sendResponse(res, 201, 'Department created successfully', result);
 };
 

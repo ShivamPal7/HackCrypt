@@ -5,6 +5,7 @@ import env from '../config/env';
 import prisma from '../config/prisma';
 import { Role } from '@prisma/client';
 
+// Extend Express Request
 declare global {
     namespace Express {
         interface Request {
@@ -12,6 +13,7 @@ declare global {
                 id: string;
                 role: Role;
                 email: string;
+                institutionId?: string | null;
             };
         }
     }
@@ -25,26 +27,32 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             throw new ApiError(401, 'Authentication required');
         }
 
-        const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string; role: Role; email: string };
-        req.user = decoded;
+        const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string; role: Role };
 
-        // Optional: Check if user still exists in DB if strict security needed
-        // const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-        // if (!user) throw new ApiError(401, 'User not found');
+        // Fetch fresh user data to get institutionId
+        const user = await prisma.user.findUnique({
+            where: { id: decoded.id },
+            select: { id: true, role: true, email: true, institutionId: true } // Fetch institutionId
+        });
 
+        if (!user) {
+            throw new ApiError(401, 'User not found');
+        }
+
+        req.user = user;
         next();
     } catch (error) {
         next(new ApiError(401, 'Invalid or expired token'));
     }
 };
 
-export const authorize = (allowedRoles: Role[]) => {
+export const authorize = (roles: Role[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user) {
-            return next(new ApiError(401, 'Authentication required'));
+            return next(new ApiError(401, 'User not authenticated'));
         }
 
-        if (!allowedRoles.includes(req.user.role)) {
+        if (!roles.includes(req.user.role)) {
             return next(new ApiError(403, 'Access denied'));
         }
 

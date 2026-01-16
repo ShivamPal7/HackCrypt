@@ -18,7 +18,6 @@ datasource db {
 //////////////////////////////////////////////////////
 
 enum Role {
-  ORGANISATION
   ADMIN
   TEACHER
   STUDENT
@@ -57,61 +56,101 @@ enum VerificationResult {
   FAILED
 }
 
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 //////////////////////////////////////////////////////
 // CORE MODELS
 //////////////////////////////////////////////////////
 
 model User {
-  id    String @id @default(uuid())
-  email String @unique
-  name  String
-  age   Int?
-  role  Role
-  password String
+  id            String  @id @default(uuid())
+  email         String  @unique
+  name          String
+  firstName     String? // UI Enhancement
+  lastName      String? // UI Enhancement
+  age           Int?
+  role          Role
+  password      String
+  institutionId String? // Optional initially until joined/created
+  
+  avatarUrl     String? // UI Enhancement
+  bio           String? // UI Enhancement
+  phoneNumber   String? // UI Enhancement
+  isActive      Boolean @default(true) // UI Enhancement
+  lastLoginAt   DateTime? // UI Enhancement
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Organisation membership
-  organisations UserOrganisation[]
+  // Institution Relation
+  institution Institution? @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  // Join Requests
+  joinRequests JoinRequest[]
 
   // Teaching relations
   taughtDepartments Department[] @relation("DepartmentTeachers")
   taughtClasses     Class[]      @relation("ClassTeacher")
+  taughtLectures    Lecture[]    @relation("TeacherLectures")
 
   // Student relations
-  classes             Class[]              @relation("ClassStudents")
-  attendances         Attendance[]
+  studentDepartmentId String?
+  studentClassId      String?
+  
+  studentDepartment Department? @relation("DepartmentStudents", fields: [studentDepartmentId], references: [id])
+  studentClass      Class?      @relation("ClassUniqueStudent", fields: [studentClassId], references: [id])
+
+  // attendances         Attendance[] // Relation defined below
+  studentAttendances  Attendance[]    @relation("StudentAttendances")
   devices             Device[]
-  subjects            Subject[]
   attendanceOverrides AttendanceOverride[]
 }
 
-model Organisation {
-  id   String @id @default(uuid())
-  name String
+model Institution {
+  id       String @id @default(uuid())
+  name     String
+  joinCode String @unique
+
+  // UI/Profile Metadata
+  description String?
+  logoUrl     String?
+  email       String?
+  phone       String?
+  address     String?
+  website     String?
+  isActive    Boolean @default(true)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   // Relations
-  users       UserOrganisation[]
-  departments Department[]
-  classes     Class[]
-  subjects    Subject[]
-  sessions    AttendanceSession[]
-  attendances Attendance[]
+  users        User[]
+  departments  Department[]
+  classes      Class[]
+  subjects     Subject[]
+  lectures     Lecture[]
+  sessions     AttendanceSession[]
+  attendances  Attendance[]
+  joinRequests JoinRequest[]
 }
 
-model UserOrganisation {
-  id             String @id @default(uuid())
-  userId         String
-  organisationId String
+model JoinRequest {
+  id            String            @id @default(uuid())
+  userId        String
+  institutionId String
+  status        JoinRequestStatus @default(PENDING)
 
-  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, organisationId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, institutionId])
 }
 
 //////////////////////////////////////////////////////
@@ -121,11 +160,16 @@ model UserOrganisation {
 model Department {
   id   String @id @default(uuid())
   name String
+  
+  description String? // UI
+  colorCode   String? // UI
+  iconKey     String? // UI
 
-  organisationId String
-  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
   teachers User[]  @relation("DepartmentTeachers")
+  students User[]  @relation("DepartmentStudents")
   classes  Class[]
 
   createdAt DateTime @default(now())
@@ -135,17 +179,22 @@ model Class {
   id   String @id @default(uuid())
   name String
 
-  organisationId String
-  departmentId   String
-  teacherId      String
+  academicYear String? // UI
+  section      String? // UI
+  iconKey      String? // UI
 
-  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  department   Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
-  teacher      User         @relation("ClassTeacher", fields: [teacherId], references: [id])
+  institutionId String
+  departmentId  String
+  teacherId     String
 
-  students User[]              @relation("ClassStudents")
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  department  Department  @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  teacher     User        @relation("ClassTeacher", fields: [teacherId], references: [id])
+
+  students User[]    @relation("ClassUniqueStudent")
   subjects Subject[]
-  sessions AttendanceSession[]
+  lectures Lecture[]
+  // sessions AttendanceSession[] // Sessions now belong to Lecture
 
   createdAt DateTime @default(now())
 }
@@ -154,17 +203,52 @@ model Subject {
   id   String @id @default(uuid())
   name String
 
-  organisationId String
-  classId        String
-  teacherId      String
+  code        String? // UI e.g. PHY101
+  description String? // UI
+  colorCode   String? // UI
 
-  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  teacher      User         @relation(fields: [teacherId], references: [id])
+  institutionId String
+  classId       String
+  // teacherId     String // Removed: A subject in a class might have a specific teacher, or is it defined by the Lecture? "Subject -> Lecture". Usually a Subject in a Class is taught by ONE teacher. But "Teacher -> Lectures". Let's keep teacherId here as the default teacher for this subject in this class.
+  // User spec: "A Class... subjects... lectures". 
+  // Let's keep it simple: Subject belongs to Class. Lectures belong to Subject+Class.
+  
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  class       Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  // teacher     User        @relation(fields: [teacherId], references: [id]) // Optional: Can add if needed for "Subject Teacher" role.
 
-  sessions AttendanceSession[]
+  lectures Lecture[]
 
   createdAt DateTime @default(now())
+}
+
+model Lecture {
+  id String @id @default(uuid())
+  
+  institutionId String
+  classId       String
+  subjectId     String
+  teacherId     String // The specific teacher for this lecture
+
+  title              String? // UI
+  topic              String? // UI
+  description        String? // UI (Markdown)
+  cancellationReason String? // UI
+
+  startTime DateTime
+  endTime   DateTime
+  status    SessionStatus @default(UPCOMING) // Reusing SessionStatus (UPCOMING, ACTIVE=Ongoing, COMPLETED, CANCELLED)
+
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  class       Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject     Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher     User        @relation("TeacherLectures", fields: [teacherId], references: [id])
+
+  sessions AttendanceSession[]
+  attendances Attendance[] // Direct link for easier query? Yes.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //////////////////////////////////////////////////////
@@ -174,18 +258,23 @@ model Subject {
 model AttendanceSession {
   id String @id @default(uuid())
 
-  organisationId String
-  classId        String
-  subjectId      String
+  institutionId String
+  lectureId     String
 
-  startTime DateTime
-  endTime   DateTime
-  status    SessionStatus
+  remarks   String? // UI
 
-  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  startTime DateTime @default(now())
+  endTime   DateTime? // When the session was closed
+  status    SessionStatus @default(ACTIVE)
 
+  institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  lecture     Lecture     @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+
+  // attendances Attendance[] // Attendance links to Lecture usually, but specific record created during a session?
+  // User Rule: "Attendance is always tied to a Lecture... Attendance Session... Can be opened/closed". 
+  // "Attendance Record Rules... Is linked to One Lecture". 
+  // Let's link Attendance to Lecture PRIMARY. Session is just a time window meta-data.
+  // Actually, keeping link to Session is useful to know WHICH session they were marked in (e.g. late vs early).
   attendances Attendance[]
 
   createdAt DateTime @default(now())
@@ -194,28 +283,36 @@ model AttendanceSession {
 model Attendance {
   id String @id @default(uuid())
 
-  studentId      String
-  sessionId      String
-  organisationId String
-  deviceId       String?
+  studentId     String
+  lectureId     String
+  sessionId     String? // Optional if we allow marking outside a session (manual fix)? But rule says "tied to lecture". Session is "time bound". Let's keep it nullable or required? Rule 6: "Linked to One Lecture".
+  
+  // Denormalized fields for reporting
+  institutionId String
+  classId       String
+  departmentId  String
 
-  status AttendanceStatus
+  status       AttendanceStatus
+  remarks      String? // UI
+  markedVia    String? // MANUAL, DEVICE, FACE
+  
+  deviceId     String?
+  deviceVerified Boolean @default(false)
+  faceVerified   Boolean @default(false)
 
-  deviceVerified Boolean
-  faceVerified   Boolean
-
-  student      User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  session      AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  organisation Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
-  device       Device?           @relation(fields: [deviceId], references: [id])
-
+  student     User              @relation("StudentAttendances", fields: [studentId], references: [id], onDelete: Cascade)
+  lecture     Lecture           @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  session     AttendanceSession? @relation(fields: [sessionId], references: [id]) // Optional link to specific session window
+  institution Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  device      Device?           @relation(fields: [deviceId], references: [id])
+  
   faceCheck FaceVerification?
   override  AttendanceOverride?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([studentId, sessionId])
+  @@unique([studentId, lectureId]) // One record per student per lecture
 }
 
 //////////////////////////////////////////////////////

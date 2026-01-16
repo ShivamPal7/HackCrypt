@@ -10,14 +10,24 @@ const router = Router();
 
 router.use(authenticate);
 
-// Sessions
-router.post('/sessions', authorize([Role.TEACHER, Role.ADMIN]), validate(attendanceValidator.createSessionSchema), asyncHandler(attendanceController.createSession));
-router.get('/sessions/:id', authorize([Role.TEACHER, Role.ADMIN, Role.STUDENT]), asyncHandler(attendanceController.getSession));
-router.post('/sessions/:id/start', authorize([Role.TEACHER, Role.ADMIN]), asyncHandler(attendanceController.startSession));
-router.post('/sessions/:id/end', authorize([Role.TEACHER, Role.ADMIN]), asyncHandler(attendanceController.endSession));
+// 10. Attendance (Critical Path)
+// Student
+router.post('/mark', authorize([Role.STUDENT]), validate(attendanceValidator.markAttendanceSchema), asyncHandler(attendanceController.mark));
+router.get('/me', authorize([Role.STUDENT]), asyncHandler(attendanceController.getMyAttendance));
 
-// Attendance
-router.post('/attendance/mark', authorize([Role.STUDENT]), validate(attendanceValidator.markAttendanceSchema), asyncHandler(attendanceController.mark));
-router.post('/attendance/:id/override', authorize([Role.ADMIN]), validate(attendanceValidator.overrideAttendanceSchema), asyncHandler(attendanceController.override));
+// Teacher
+router.get('/lecture/:id', authorize([Role.TEACHER, Role.ADMIN]), asyncHandler(attendanceController.getLectureAttendance));
+
+// Admin (Overrides & Details)
+router.post('/:id/override', authorize([Role.ADMIN]), validate(attendanceValidator.overrideAttendanceSchema), asyncHandler(attendanceController.override));
+router.get('/:id/override', authorize([Role.ADMIN]), asyncHandler(attendanceController.getOverride));
+
+// Legacy or Internal Session Management (Optional, favoring Lecture Nested Routes)
+// router.get('/sessions/:id', ...); // Deprecated in favor of /lectures/:id/sessions?
+// Let's keep specific session getter if needed by UI directly by ID? "GET /lectures/:id/sessions" gives list. 
+// "GET /attendance/sessions/:id" useful for specific details?
+// Spec 9: GET /lectures/:id/sessions. Doesn't mention GET /sessions/:id specific.
+// I'll keep it for robustness but strict to spec is preferred. Leaving it out as per "No API should remain...".
 
 export default router;
+
