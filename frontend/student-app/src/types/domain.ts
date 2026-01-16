@@ -25,8 +25,50 @@ export interface ClassSession {
     iconName: 'function' | 'laptop' | 'history'; // Mapping to icon names
 }
 
+export interface Course {
+    id: string;
+    title: string;
+    professor: string;
+    location: string;
+    percentage: number;
+    iconName: 'function' | 'laptop' | 'history' | 'code';
+    themeColor: string; // e.g. "bg-info/10" or hex
+    totalStudents: number;
+    // We will simulate avatars by just having a count or a few URLs
+    studentAvatars: string[];
+}
+
 export interface TabRoute {
     name: string;
     label: string;
     icon: string;
+}
+
+export interface DailyAttendance {
+    day: number;
+    status: 'present' | 'absent' | 'late' | 'none'; // 'none' for future/empty
+    intensity?: 'low' | 'medium' | 'high'; // For heatmap coloring
+}
+
+export interface ActivityLog {
+    id: string;
+    date: string; // "October 24, 2023"
+    day: string; // "TUESDAY"
+    time: string; // "09:02 AM"
+    status: 'Present' | 'Late' | 'Absent';
+    meta?: string; // "Checked in at..." or "No check-in record"
+}
+
+export interface CourseDetails {
+    courseId: string;
+    stats: {
+        present: number;
+        presentTrend: string; // "+5%"
+        late: number;
+        lateTrend: string; // "-1%"
+        absent: number;
+        absentTrend: string; // "0%"
+    };
+    heatmap: DailyAttendance[];
+    activityLog: ActivityLog[];
 }
