@@ -1,4 +1,4 @@
-import { AttendanceStats, ClassSession, Course, CourseDetails, DailyAttendance, ReportSummary, User } from '../types/domain';
+import { AttendanceStats, ClassSession, Course, CourseDetails, DailyAttendance, InstructorUser, ReportSummary, TeacherLecture, TeacherStats, User } from '../types/domain';
 
 export const currentUser: User = {
     id: 'u1',
@@ -257,3 +257,55 @@ export const mockReportData: ReportSummary = {
         },
     ]
 };
+
+export const currentInstructor: InstructorUser = {
+    id: 'inst1',
+    name: 'Instructor',
+    avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+    role: 'Instructor',
+};
+
+export const teacherStats: TeacherStats = {
+    avgAttendance: 88,
+    nextClassTime: '10:30 AM',
+    nextClassName: 'Intro to UI Design',
+};
+
+export const todaysLectures: TeacherLecture[] = [
+    {
+        id: 'tc1',
+        courseCode: 'CS101',
+        title: 'Intro to UI Design',
+        studentsPresent: 24,
+        totalStudents: 30,
+        startTime: '10:30 AM',
+        endTime: '11:30 AM',
+        location: 'Room 304',
+        status: 'live',
+        progress: 0.8,
+    },
+    {
+        id: 'tc2',
+        courseCode: 'MATH202',
+        title: 'Advanced Calculus',
+        studentsPresent: 42,
+        totalStudents: 45,
+        startTime: '09:00 AM',
+        endTime: '10:00 AM',
+        location: 'Hall B',
+        status: 'completed',
+        progress: 0.93,
+    },
+    {
+        id: 'tc3',
+        courseCode: 'DES304',
+        title: 'Product Design',
+        studentsPresent: 0,
+        totalStudents: 20,
+        startTime: '02:00 PM',
+        endTime: '04:00 PM',
+        location: 'Lab 2',
+        status: 'upcoming',
+        progress: 0,
+    },
+];

@@ -1,10 +1,10 @@
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { InsightCard } from '../../src/components/reports/InsightCard';
-import { ReportsHeader } from '../../src/components/reports/ReportsHeader';
-import { SubjectBreakdown } from '../../src/components/reports/SubjectBreakdown';
-import { TrendChart } from '../../src/components/reports/TrendChart';
-import { mockReportData } from '../../src/data/mock';
+import { InsightCard } from '@/src/components/reports/InsightCard';
+import { ReportsHeader } from '@/src/components/reports/ReportsHeader';
+import { SubjectBreakdown } from '@/src/components/reports/SubjectBreakdown';
+import { TrendChart } from '@/src/components/reports/TrendChart';
+import { mockReportData } from '@/src/data/mock';
 
 export default function ReportsScreen() {
     return (

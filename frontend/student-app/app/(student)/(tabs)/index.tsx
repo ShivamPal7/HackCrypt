@@ -1,10 +1,10 @@
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AttendanceCard } from '../../src/components/home/AttendanceCard';
-import { ClassItem } from '../../src/components/home/ClassItem';
-import { Header } from '../../src/components/home/Header';
-import { QuickCheckIn } from '../../src/components/home/QuickCheckIn';
-import { attendanceSummary, currentUser, todaysClasses } from '../../src/data/mock';
+import { AttendanceCard } from '@/src/components/home/AttendanceCard';
+import { ClassItem } from '@/src/components/home/ClassItem';
+import { Header } from '@/src/components/home/Header';
+import { QuickCheckIn } from '@/src/components/home/QuickCheckIn';
+import { attendanceSummary, currentUser, todaysClasses } from '@/src/data/mock';
 
 export default function HomeScreen() {
     return (

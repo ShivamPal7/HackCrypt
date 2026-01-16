@@ -1,6 +1,6 @@
 import { Text, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { AttendanceStats } from '../../types/domain';
+import { AttendanceStats } from '@/src/types/domain';
 
 interface AttendanceCardProps {
     stats: AttendanceStats;

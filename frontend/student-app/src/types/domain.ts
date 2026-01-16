@@ -102,3 +102,29 @@ export interface ReportSummary {
     trend: AttendanceTrend[];
     subjects: SubjectAttendance[];
 }
+
+export interface InstructorUser {
+    id: string;
+    name: string;
+    avatarUrl: string;
+    role: 'Instructor';
+}
+
+export interface TeacherStats {
+    avgAttendance: number; // percentage
+    nextClassTime: string; // e.g. "10:30 AM"
+    nextClassName?: string;
+}
+
+export interface TeacherLecture {
+    id: string;
+    courseCode: string; // "CS101"
+    title: string;
+    studentsPresent: number;
+    totalStudents: number;
+    startTime: string; // "10:30 AM"
+    endTime: string; // "11:30 AM"
+    location: string; // "Room 304"
+    status: 'completed' | 'live' | 'upcoming';
+    progress: number; // 0-1
+}

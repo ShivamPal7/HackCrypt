@@ -19,6 +19,7 @@ export function LoginScreen() {
 
     const handleSignIn = () => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        router.push("/(tabs)");
         console.log("Sign in");
     };
 

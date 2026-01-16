@@ -1,9 +1,9 @@
 import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ClassesHeader } from '../../src/components/classes/ClassesHeader';
-import { CourseCard } from '../../src/components/classes/CourseCard';
-import { SearchBar } from '../../src/components/classes/SearchBar';
-import { courses, currentUser } from '../../src/data/mock';
+import { ClassesHeader } from '@/src/components/classes/ClassesHeader';
+import { CourseCard } from '@/src/components/classes/CourseCard';
+import { courses, currentUser } from '@/src/data/mock';
+import { SearchBar } from '@/src/components/classes/SearchBar';
 
 export default function ClassesScreen() {
     return (
