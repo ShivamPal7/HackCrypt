@@ -206,6 +206,7 @@ model Subject {
   code        String? // UI e.g. PHY101
   description String? // UI
   colorCode   String? // UI
+  icon        String? // UI - Fallback for lectures
 
   institutionId String
   classId       String
@@ -234,6 +235,10 @@ model Lecture {
   topic              String? // UI
   description        String? // UI (Markdown)
   cancellationReason String? // UI
+
+  roomNumber String?
+  location   String?
+  icon       String?
 
   startTime DateTime
   endTime   DateTime

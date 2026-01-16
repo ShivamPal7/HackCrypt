@@ -21,33 +21,91 @@ export const createLecture = async (data: any, institutionId: string) => {
 };
 
 export const getLectures = async (query: any, institutionId: string, user: any) => {
-    const { classId, teacherId, fromDate, toDate } = query;
+    const { date } = query;
     const where: any = { institutionId };
 
-    if (classId) where.classId = classId;
-    if (teacherId) where.teacherId = teacherId;
-
-    // RBAC: Student can only see lectures of their class
+    // 1. Role-Based Scoping
     if (user.role === 'STUDENT') {
         if (!user.studentClassId) throw new ApiError(403, 'Student not assigned to any class');
         where.classId = user.studentClassId;
+    } else if (user.role === 'TEACHER') {
+        where.teacherId = user.id;
     }
-    // RBAC: Teacher can see lectures they teach (or all? Usually their own or schedule table)
-    // Let's allow Teachers to see all for now to check potential subs, or restrict?
-    // User View Rule: "Teacher View... All lectures they have taught". 
-    // Allowing filter.
+    // Admin sees all (already scoped by institutionId)
 
-    if (fromDate && toDate) {
-        where.startTime = { gte: new Date(fromDate), lte: new Date(toDate) };
+    // 2. Date Filtering
+    if (date) {
+        // Specific date: 00:00 to 23:59
+        const targetDate = new Date(date);
+        const nextDay = new Date(targetDate);
+        nextDay.setDate(targetDate.getDate() + 1);
+
+        where.startTime = {
+            gte: targetDate,
+            lt: nextDay
+        };
+    } else {
+        // No date? Fetch ALL scheduled lectures?
+        // User spec: "If date is NOT provided: Fetch all scheduled lectures"
+        // We might want to limit to 'future' or something for sanity, but sticking to spec "ALL".
     }
 
+    // 3. Fetch Data
     const lectures = await prisma.lecture.findMany({
         where,
-        include: { subject: true, class: true, teacher: { select: { name: true, id: true } } },
+        include: {
+            subject: { select: { icon: true } },
+            // teacher: { select: { name: true } } // Optional, not requested in specs response
+        },
         orderBy: { startTime: 'asc' }
     });
-    return lectures;
+
+    // 4. Transform & Format
+    const formattedLectures = lectures.map(l => {
+        const start = l.startTime;
+        const end = l.endTime;
+        const duration = Math.round((end.getTime() - start.getTime()) / (1000 * 60)); // minutes
+
+        // Format time HH:mm
+        const formatTime = (d: Date) => d.toISOString().substring(11, 16);
+
+        return {
+            lectureId: l.id,
+            title: l.title || l.topic || "Untitled Lecture", // Fallback
+            date: start.toISOString().split('T')[0],
+            startTime: formatTime(start),
+            endTime: formatTime(end),
+            duration,
+            roomNumber: l.roomNumber,
+            location: l.location,
+            icon: l.icon || l.subject.icon, // Fallback
+            status: l.status
+        };
+    });
+
+    // 5. Grouping or Single Date Return
+    if (date) {
+        return {
+            date: date,
+            lectures: formattedLectures
+        };
+    } else {
+        // Group by date
+        const grouped: Record<string, typeof formattedLectures> = {};
+
+        formattedLectures.forEach(l => {
+            if (!grouped[l.date]) grouped[l.date] = [];
+            grouped[l.date].push(l);
+        });
+
+        // Convert to array
+        return Object.keys(grouped).sort().map(d => ({
+            date: d,
+            lectures: grouped[d]
+        }));
+    }
 };
+
 
 export const getLecture = async (id: string, institutionId: string) => {
     const lecture = await prisma.lecture.findUnique({
