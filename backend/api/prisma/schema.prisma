@@ -108,8 +108,8 @@ model UserOrganisation {
   userId         String
   organisationId String
 
-  user         User         @relation(fields: [userId], references: [id])
-  organisation Organisation @relation(fields: [organisationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   @@unique([userId, organisationId])
 }
@@ -123,7 +123,7 @@ model Department {
   name String
 
   organisationId String
-  organisation   Organisation @relation(fields: [organisationId], references: [id])
+  organisation   Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
 
   teachers User[]  @relation("DepartmentTeachers")
   classes  Class[]
@@ -139,8 +139,8 @@ model Class {
   departmentId   String
   teacherId      String
 
-  organisation Organisation @relation(fields: [organisationId], references: [id])
-  department   Department   @relation(fields: [departmentId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  department   Department   @relation(fields: [departmentId], references: [id], onDelete: Cascade)
   teacher      User         @relation("ClassTeacher", fields: [teacherId], references: [id])
 
   students User[]              @relation("ClassStudents")
@@ -158,8 +158,8 @@ model Subject {
   classId        String
   teacherId      String
 
-  organisation Organisation @relation(fields: [organisationId], references: [id])
-  class        Class        @relation(fields: [classId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
   teacher      User         @relation(fields: [teacherId], references: [id])
 
   sessions AttendanceSession[]
@@ -182,9 +182,9 @@ model AttendanceSession {
   endTime   DateTime
   status    SessionStatus
 
-  organisation Organisation @relation(fields: [organisationId], references: [id])
-  class        Class        @relation(fields: [classId], references: [id])
-  subject      Subject      @relation(fields: [subjectId], references: [id])
+  organisation Organisation @relation(fields: [organisationId], references: [id], onDelete: Cascade)
+  class        Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject      Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 
   attendances Attendance[]
 
@@ -204,9 +204,9 @@ model Attendance {
   deviceVerified Boolean
   faceVerified   Boolean
 
-  student      User              @relation(fields: [studentId], references: [id])
-  session      AttendanceSession @relation(fields: [sessionId], references: [id])
-  organisation Organisation      @relation(fields: [organisationId], references: [id])
+  student      User              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  session      AttendanceSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  organisation Organisation      @relation(fields: [organisationId], references: [id], onDelete: Cascade)
   device       Device?           @relation(fields: [deviceId], references: [id])
 
   faceCheck FaceVerification?
@@ -232,7 +232,7 @@ model Device {
   registeredAt DateTime  @default(now())
   lastUsedAt   DateTime?
 
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   attendances Attendance[]
 }
 
@@ -243,7 +243,7 @@ model FaceVerification {
   result          VerificationResult
   confidenceScore Float?
 
-  attendance Attendance @relation(fields: [attendanceId], references: [id])
+  attendance Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 }
@@ -257,7 +257,7 @@ model AttendanceOverride {
   reason OverrideReason
   notes  String?
 
-  attendance   Attendance @relation(fields: [attendanceId], references: [id])
+  attendance   Attendance @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
   overriddenBy User       @relation(fields: [overriddenById], references: [id])
 
   createdAt DateTime @default(now())
