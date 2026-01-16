@@ -39,6 +39,12 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
             throw new ApiError(401, 'User not found');
         }
 
+        // Global Safety Net: User MUST belong to an institution to access protected routes
+        // This handles cases where a user is unlinked/fired but still holds a token
+        if (!user.institutionId) {
+            throw new ApiError(403, 'Access denied: User not linked to any institution');
+        }
+
         req.user = user;
         next();
     } catch (error) {

@@ -23,7 +23,7 @@ export const createUser = async (data: any, institutionId: string) => {
 export const getAllUsers = async (institutionId: string) => {
     return prisma.user.findMany({
         where: { institutionId },
-        select: { id: true, name: true, email: true, role: true, isActive: true, avatarUrl: true, firstName: true, lastName: true }
+        select: { id: true, name: true, email: true, role: true, isActive: true, avatarUrl: true, rollNo: true }
     });
 };
 
@@ -65,11 +65,11 @@ export const updateStatus = async (id: string, isActive: boolean, institutionId:
 
 export const updateProfile = async (id: string, data: any) => {
     // Self update, no institution check needed strictly if auth worked, but good practice.
-    // data: firstName, lastName, avatarUrl, phone, bio
+    // data: avatarUrl, phone
     return prisma.user.update({
         where: { id },
         data,
-        select: { id: true, name: true, firstName: true, lastName: true, avatarUrl: true, bio: true, phoneNumber: true }
+        select: { id: true, name: true, avatarUrl: true, phoneNumber: true, rollNo: true }
     });
 };
 

@@ -4,6 +4,8 @@ import bcrypt from 'bcryptjs';
 import { Role } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
+import { generateTokens } from './auth.service';
+
 export const createInstitution = async (data: any) => {
     const { institution: institutionData, user: userData } = data;
 
@@ -35,13 +37,20 @@ export const createInstitution = async (data: any) => {
                 email: userData.email,
                 password: hashedPassword,
                 name: userData.name,
-                age: userData.age,
                 role: Role.ADMIN,
                 institutionId: institution.id,
             },
         });
 
-        return { institution, user: { id: user.id, email: user.email, name: user.name, role: user.role } };
+        // 4. Generate Tokens
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        return {
+            institution,
+            user: { id: user.id, email: user.email, name: user.name, role: user.role },
+            accessToken,
+            refreshToken
+        };
     });
 
     return result;

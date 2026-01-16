@@ -70,18 +70,17 @@ model User {
   id            String  @id @default(uuid())
   email         String  @unique
   name          String
-  firstName     String? // UI Enhancement
-  lastName      String? // UI Enhancement
-  age           Int?
+  // firstName, lastName, age, bio removed per request
+  rollNo        String? // Added
+  
   role          Role
   password      String
-  institutionId String? // Optional initially until joined/created
+  institutionId String? 
   
-  avatarUrl     String? // UI Enhancement
-  bio           String? // UI Enhancement
-  phoneNumber   String? // UI Enhancement
-  isActive      Boolean @default(true) // UI Enhancement
-  lastLoginAt   DateTime? // UI Enhancement
+  avatarUrl     String? 
+  phoneNumber   String? 
+  isActive      Boolean @default(true) 
+  // lastLoginAt removed
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -363,4 +362,14 @@ model AttendanceOverride {
   overriddenBy User       @relation(fields: [overriddenById], references: [id])
 
   createdAt DateTime @default(now())
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  email     String
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@unique([email, code])
 }

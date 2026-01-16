@@ -16,9 +16,6 @@ export const createInstitutionSchema = z.object({
             email: z.string().email(),
             password: z.string().min(6),
             name: z.string().min(1),
-            firstName: z.string().optional(),
-            lastName: z.string().optional(),
-            age: z.number().optional(),
             // role is ADMIN implicitly
         }),
     }),

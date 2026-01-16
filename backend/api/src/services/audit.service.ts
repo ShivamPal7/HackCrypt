@@ -26,7 +26,7 @@ export const getUserAudit = async (userId: string, institutionId: string) => {
     return {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
-        lastLoginAt: user.lastLoginAt,
+        // lastLoginAt removed
         // formatted history could be added here if we had an ActionLog table
     };
 };
