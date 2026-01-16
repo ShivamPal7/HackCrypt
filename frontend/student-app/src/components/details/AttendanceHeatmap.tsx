@@ -44,15 +44,19 @@ export function AttendanceHeatmap({ data }: AttendanceHeatmapProps) {
 
     // Days
     for (let i = 1; i <= daysInMonth; i++) {
-        // Find status from props ONLY if we are in Oct 2023 (Mock Data Scope)
-        // In a real app, 'data' would be keyed by date or fetched dynamically.
-        // Mock Data: October 2023 -> Year 2023, Month 9
+        // Find status from props
         let status = 'none';
 
-        if (currentDate.getFullYear() === 2023 && currentDate.getMonth() === 9) {
-            const dayData = data.find(d => d.day === i);
-            if (dayData) status = dayData.status;
-        }
+        // Construct date string for the current cell "YYYY-MM-DD"
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth(); // 0-indexed
+
+        // Ensure month/day padding matches data format
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
+        // Find matching data point
+        const dayData = data.find(d => d.date === dateStr);
+        if (dayData) status = dayData.status;
 
         gridItems.push({ type: 'day', day: i, status, key: `day-${i}` });
     }

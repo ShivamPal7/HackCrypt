@@ -1,10 +1,13 @@
-import { AttendanceStats, ClassSession, Course, CourseDetails, DailyAttendance, User } from '../types/domain';
+import { AttendanceStats, ClassSession, Course, CourseDetails, DailyAttendance, ReportSummary, User } from '../types/domain';
 
 export const currentUser: User = {
     id: 'u1',
-    name: 'Alex Johnson',
-    // Using a placeholder avatar that looks professional
-    avatarUrl: 'https://cdn.pixabay.com/photo/2024/02/12/17/23/ai-generated-8569065_1280.jpg',
+    name: 'Alex Thompson',
+    avatarUrl: 'https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_1280.png', // Simple reliable placeholder
+    studentId: '#ST-2024-08',
+    department: 'Computer Science',
+    classGrade: 'B.Tech - 3rd Year',
+    rollNo: 'CS2021045',
 };
 
 export const attendanceSummary: AttendanceStats = {
@@ -124,12 +127,27 @@ export const courses: Course[] = [
 
 const generateHeatmap = (): DailyAttendance[] => {
     const days: DailyAttendance[] = [];
-    for (let i = 1; i <= 31; i++) {
+    // Fixed to October 2023 for Mock Data consistency
+    const year = 2023;
+    const month = 9; // October (0-indexed)
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let i = 1; i <= daysInMonth; i++) {
+        // Create date string "YYYY-MM-DD"
+        // Note: Months depend on your date library or convention. 
+        // Here we build "2023-10-XX" manually or via Date object.
+        const dateObj = new Date(year, month, i);
+        // Helper to format YYYY-MM-DD locally to avoid timezone shifts if using UTC methods
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+
         let status: DailyAttendance['status'] = 'none';
+
+        // Map original day numbers to statuses for existing logic preservation
         if ([7, 8, 9, 10, 11, 14, 15, 16, 18, 20, 21, 24].includes(i)) status = 'present';
         if ([13].includes(i)) status = 'late';
         if ([5].includes(i)) status = 'absent';
-        days.push({ day: i, status });
+
+        days.push({ date: dateStr, status });
     }
     return days;
 };
@@ -187,4 +205,55 @@ export const cs101Details: CourseDetails = {
             meta: 'Checked in at 09:12 AM',
         },
     ],
+};
+
+export const mockReportData: ReportSummary = {
+    month: 'October 2023',
+    totalSessions: 120,
+    presentSessions: 98,
+    absentSessions: 12,
+    lateSessions: 10,
+    attendancePercentage: 82,
+    trend: [
+        { day: 'Mon', present: 8, absent: 1 },
+        { day: 'Tue', present: 7, absent: 2 },
+        { day: 'Wed', present: 8, absent: 0 },
+        { day: 'Thu', present: 6, absent: 3 },
+        { day: 'Fri', present: 9, absent: 0 },
+        { day: 'Sat', present: 4, absent: 0 },
+    ],
+    subjects: [
+        {
+            id: 's1',
+            subjectName: 'Advanced Mathematics',
+            percentage: 92,
+            totalClasses: 24,
+            attendedClasses: 22,
+            color: '#3B82F6' // info
+        },
+        {
+            id: 's2',
+            subjectName: 'Computer Science 101',
+            percentage: 85,
+            totalClasses: 30,
+            attendedClasses: 25,
+            color: '#A855F7' // purple
+        },
+        {
+            id: 's3',
+            subjectName: 'Modern History',
+            percentage: 78,
+            totalClasses: 20,
+            attendedClasses: 15,
+            color: '#F97316' // orange
+        },
+        {
+            id: 's4',
+            subjectName: 'Physics 201',
+            percentage: 65,
+            totalClasses: 28,
+            attendedClasses: 18,
+            color: '#EF4444' // destructive
+        },
+    ]
 };

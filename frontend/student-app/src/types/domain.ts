@@ -3,6 +3,10 @@ export interface User {
     id: string;
     name: string;
     avatarUrl: string;
+    studentId: string;
+    department: string;
+    classGrade: string; // "B.Tech - 3rd Year"
+    rollNo: string;
 }
 
 export interface AttendanceStats {
@@ -45,7 +49,7 @@ export interface TabRoute {
 }
 
 export interface DailyAttendance {
-    day: number;
+    date: string; // ISO Date "YYYY-MM-DD"
     status: 'present' | 'absent' | 'late' | 'none'; // 'none' for future/empty
     intensity?: 'low' | 'medium' | 'high'; // For heatmap coloring
 }
@@ -71,4 +75,30 @@ export interface CourseDetails {
     };
     heatmap: DailyAttendance[];
     activityLog: ActivityLog[];
+}
+
+export interface AttendanceTrend {
+    day: string; // "Mon", "Tue"
+    present: number;
+    absent: number;
+}
+
+export interface SubjectAttendance {
+    id: string;
+    subjectName: string;
+    percentage: number;
+    totalClasses: number;
+    attendedClasses: number;
+    color: string; // Support themed colors
+}
+
+export interface ReportSummary {
+    month: string;
+    totalSessions: number;
+    presentSessions: number;
+    absentSessions: number;
+    lateSessions: number;
+    attendancePercentage: number;
+    trend: AttendanceTrend[];
+    subjects: SubjectAttendance[];
 }
