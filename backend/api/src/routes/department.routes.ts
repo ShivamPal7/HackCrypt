@@ -11,6 +11,7 @@ const router = Router();
 router.use(authenticate);
 
 router.post('/', authorize([Role.ADMIN]), validate(departmentValidator.createDepartmentSchema), asyncHandler(departmentController.create));
+router.get('/', authorize([Role.ADMIN, Role.TEACHER, Role.STUDENT]), asyncHandler(departmentController.getAll));
 router.get('/:id', authorize([Role.ADMIN, Role.TEACHER]), asyncHandler(departmentController.get));
 router.put('/:id', authorize([Role.ADMIN]), validate(departmentValidator.updateDepartmentSchema), asyncHandler(departmentController.update));
 router.delete('/:id', authorize([Role.ADMIN]), asyncHandler(departmentController.remove));

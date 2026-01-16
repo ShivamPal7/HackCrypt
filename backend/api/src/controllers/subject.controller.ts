@@ -13,6 +13,11 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
     sendResponse(res, 200, 'Subject retrieved', result);
 };
 
+export const getAll = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await subjectService.getSubjects(req.user!.institutionId!);
+    sendResponse(res, 200, 'Subjects retrieved', result);
+};
+
 export const update = async (req: Request, res: Response, next: NextFunction) => {
     const result = await subjectService.updateSubject(req.params.id as string, req.body);
     sendResponse(res, 200, 'Subject updated', result);

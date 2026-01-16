@@ -95,6 +95,7 @@ export const register = async (data: any) => {
             name: data.name,
             role: data.role,
             rollNo: data.rollNo,
+            verificationImages: data.verificationImages,
             institutionId: null, // Explicitly null
         },
     });

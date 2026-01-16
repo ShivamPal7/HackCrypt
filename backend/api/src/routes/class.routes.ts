@@ -11,6 +11,7 @@ const router = Router();
 router.use(authenticate);
 
 router.post('/', authorize([Role.ADMIN]), validate(classValidator.createClassSchema), asyncHandler(classController.create));
+router.get('/', authorize([Role.ADMIN, Role.TEACHER, Role.STUDENT]), asyncHandler(classController.getAll));
 router.get('/:id', authorize([Role.ADMIN, Role.TEACHER, Role.STUDENT]), asyncHandler(classController.get));
 router.put('/:id', authorize([Role.ADMIN]), validate(classValidator.updateClassSchema), asyncHandler(classController.update));
 router.delete('/:id', authorize([Role.ADMIN]), asyncHandler(classController.remove));

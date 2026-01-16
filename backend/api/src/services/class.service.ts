@@ -25,6 +25,13 @@ export const updateClass = async (id: string, data: any) => {
     return classData;
 };
 
+export const getClasses = async (institutionId: string) => {
+    return await prisma.class.findMany({
+        where: { institutionId },
+        include: { lectures: true, subjects: true } // Reduced depth for list
+    });
+};
+
 export const deleteClass = async (id: string) => {
     await prisma.class.delete({ where: { id } });
     return { message: 'Class deleted' };

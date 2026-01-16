@@ -25,6 +25,13 @@ export const updateDepartment = async (id: string, data: any) => {
     return department;
 };
 
+export const getDepartments = async (institutionId: string) => {
+    return await prisma.department.findMany({
+        where: { institutionId },
+        include: { classes: true, teachers: true }
+    });
+};
+
 export const deleteDepartment = async (id: string) => {
     await prisma.department.delete({ where: { id } });
     return { message: 'Department deleted' };

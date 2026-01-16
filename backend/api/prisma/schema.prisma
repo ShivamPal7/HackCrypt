@@ -79,6 +79,7 @@ model User {
   
   avatarUrl     String? 
   phoneNumber   String? 
+  verificationImages String[] 
   isActive      Boolean @default(true) 
   // lastLoginAt removed
 

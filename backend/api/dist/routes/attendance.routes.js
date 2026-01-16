@@ -1,0 +1,63 @@
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const attendanceController = __importStar(require("../controllers/attendance.controller"));
+const attendanceValidator = __importStar(require("../validators/attendance.validator"));
+const validate_middleware_1 = require("../middlewares/validate.middleware");
+const auth_middleware_1 = require("../middlewares/auth.middleware");
+const asyncHandler_1 = __importDefault(require("../utils/asyncHandler"));
+const client_1 = require("@prisma/client");
+const router = (0, express_1.Router)();
+router.use(auth_middleware_1.authenticate);
+// 10. Attendance (Critical Path)
+// Student
+router.post('/mark', (0, auth_middleware_1.authorize)([client_1.Role.STUDENT]), (0, validate_middleware_1.validate)(attendanceValidator.markAttendanceSchema), (0, asyncHandler_1.default)(attendanceController.mark));
+router.get('/me', (0, auth_middleware_1.authorize)([client_1.Role.STUDENT]), (0, asyncHandler_1.default)(attendanceController.getMyAttendance));
+// Teacher
+router.get('/lecture/:id', (0, auth_middleware_1.authorize)([client_1.Role.TEACHER, client_1.Role.ADMIN]), (0, asyncHandler_1.default)(attendanceController.getLectureAttendance));
+// Admin (Overrides & Details)
+router.post('/:id/override', (0, auth_middleware_1.authorize)([client_1.Role.ADMIN]), (0, validate_middleware_1.validate)(attendanceValidator.overrideAttendanceSchema), (0, asyncHandler_1.default)(attendanceController.override));
+router.get('/:id/override', (0, auth_middleware_1.authorize)([client_1.Role.ADMIN]), (0, asyncHandler_1.default)(attendanceController.getOverride));
+// Legacy or Internal Session Management (Optional, favoring Lecture Nested Routes)
+// router.get('/sessions/:id', ...); // Deprecated in favor of /lectures/:id/sessions?
+// Let's keep specific session getter if needed by UI directly by ID? "GET /lectures/:id/sessions" gives list. 
+// "GET /attendance/sessions/:id" useful for specific details?
+// Spec 9: GET /lectures/:id/sessions. Doesn't mention GET /sessions/:id specific.
+// I'll keep it for robustness but strict to spec is preferred. Leaving it out as per "No API should remain...".
+exports.default = router;

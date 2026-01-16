@@ -10,6 +10,7 @@ export const registerSchema = z.object({
         joinCode: z.string().min(1, "Join Code is required"),
         otp: z.string().length(6, "OTP must be 6 digits"),
         rollNo: z.string().optional(),
+        verificationImages: z.array(z.string()).optional(),
     }),
 });
 

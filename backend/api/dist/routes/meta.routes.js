@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const response_1 = require("../utils/response");
+const client_1 = require("@prisma/client");
+const router = (0, express_1.Router)();
+router.get('/roles', (req, res) => (0, response_1.sendResponse)(res, 200, 'Roles', Object.values(client_1.Role)));
+router.get('/attendance-status', (req, res) => (0, response_1.sendResponse)(res, 200, 'Attendance Statuses', Object.values(client_1.AttendanceStatus)));
+router.get('/session-status', (req, res) => (0, response_1.sendResponse)(res, 200, 'Session Statuses', Object.values(client_1.SessionStatus)));
+exports.default = router;

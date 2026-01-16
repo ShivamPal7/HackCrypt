@@ -13,6 +13,11 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
     sendResponse(res, 200, 'Class retrieved', result);
 };
 
+export const getAll = async (req: Request, res: Response, next: NextFunction) => {
+    const result = await classService.getClasses(req.user!.institutionId!);
+    sendResponse(res, 200, 'Classes retrieved', result);
+};
+
 export const update = async (req: Request, res: Response, next: NextFunction) => {
     const result = await classService.updateClass(req.params.id as string, req.body);
     sendResponse(res, 200, 'Class updated', result);

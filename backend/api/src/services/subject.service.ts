@@ -25,6 +25,13 @@ export const updateSubject = async (id: string, data: any) => {
     return subject;
 };
 
+export const getSubjects = async (institutionId: string) => {
+    return await prisma.subject.findMany({
+        where: { institutionId },
+        include: { lectures: true }
+    });
+};
+
 export const deleteSubject = async (id: string) => {
     await prisma.subject.delete({ where: { id } });
     return { message: 'Subject deleted' };
