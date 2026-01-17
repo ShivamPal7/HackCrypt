@@ -2,9 +2,22 @@ import prisma from '../config/prisma';
 import ApiError from '../utils/ApiError';
 import { SessionStatus } from '@prisma/client';
 
-export const createLecture = async (data: any, institutionId: string) => {
-    // Verify Class and Subject belong to Institution
-    const classData = await prisma.class.findUnique({ where: { id: data.classId } });
+export const createLecture = async (data: any, user: any) => {
+    const { institutionId, role, id: userId } = user;
+
+    // 1. Role-Based Override
+    if (role === 'TEACHER') {
+        if (data.teacherId && data.teacherId !== userId) {
+            throw new ApiError(403, 'Teachers can only create lectures for themselves');
+        }
+        data.teacherId = userId; // Force it
+    }
+
+    // 2. Verify Class and Subject belong to Institution
+    const classData = await prisma.class.findUnique({
+        where: { id: data.classId },
+        include: { department: { include: { teachers: { select: { id: true } } } } }
+    });
     if (!classData || classData.institutionId !== institutionId) throw new ApiError(404, 'Class not found in this institution');
 
     const subjectData = await prisma.subject.findUnique({
@@ -13,11 +26,22 @@ export const createLecture = async (data: any, institutionId: string) => {
     });
     if (!subjectData || subjectData.institutionId !== institutionId) throw new ApiError(404, 'Subject not found in this institution');
 
-    // STRICT: Subject must be assigned to the Class
+    // 3. STRICT: Subject must be assigned to the Class
     const isLinked = subjectData.classes.some(c => c.id === data.classId);
     if (!isLinked) throw new ApiError(400, 'Subject is not assigned to this Class. Assign it first.');
 
-    // Verify Teacher belongs to Institution (and ideally is assigned to department? But Admin can override)
+    // 4. Verify Teacher Authorization (If Teacher)
+    if (role === 'TEACHER') {
+        // Must be Class Teacher OR in Department
+        const isClassTeacher = classData.teacherId === userId;
+        const isInDepartment = classData.department.teachers.some(t => t.id === userId);
+
+        if (!isClassTeacher && !isInDepartment) {
+            throw new ApiError(403, 'You are not authorized to schedule lectures for this class (Must be Class Teacher or in Department)');
+        }
+    }
+
+    // 5. Verify Target Teacher (for Admin or valid Teacher)
     const teacher = await prisma.user.findUnique({ where: { id: data.teacherId } });
     if (!teacher || teacher.institutionId !== institutionId) throw new ApiError(404, 'Teacher not found in this institution');
 

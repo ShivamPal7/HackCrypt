@@ -67,20 +67,20 @@ enum JoinRequestStatus {
 //////////////////////////////////////////////////////
 
 model User {
-  id            String  @id @default(uuid())
-  email         String  @unique
-  name          String
+  id     String  @id @default(uuid())
+  email  String  @unique
+  name   String
   // firstName, lastName, age, bio removed per request
-  rollNo        String? // Added
-  
+  rollNo String? // Added
+
   role          Role
   password      String
-  institutionId String? 
-  
-  avatarUrl     String? 
-  phoneNumber   String? 
-  verificationImages String[] 
-  isActive      Boolean @default(true) 
+  institutionId String?
+
+  avatarUrl          String?
+  phoneNumber        String?
+  verificationImages String[]
+  isActive           Boolean  @default(true)
   // lastLoginAt removed
 
   createdAt DateTime @default(now())
@@ -100,12 +100,12 @@ model User {
   // Student relations
   studentDepartmentId String?
   studentClassId      String?
-  
+
   studentDepartment Department? @relation("DepartmentStudents", fields: [studentDepartmentId], references: [id])
   studentClass      Class?      @relation("ClassUniqueStudent", fields: [studentClassId], references: [id])
 
   // attendances         Attendance[] // Relation defined below
-  studentAttendances  Attendance[]    @relation("StudentAttendances")
+  studentAttendances  Attendance[]         @relation("StudentAttendances")
   devices             Device[]
   attendanceOverrides AttendanceOverride[]
 }
@@ -160,7 +160,7 @@ model JoinRequest {
 model Department {
   id   String @id @default(uuid())
   name String
-  
+
   description String? // UI
   colorCode   String? // UI
   iconKey     String? // UI
@@ -168,8 +168,8 @@ model Department {
   institutionId String
   institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
 
-  teachers User[]  @relation("DepartmentTeachers")
-  students User[]  @relation("DepartmentStudents")
+  teachers User[]    @relation("DepartmentTeachers")
+  students User[]    @relation("DepartmentStudents")
   classes  Class[]
   subjects Subject[]
 
@@ -210,7 +210,7 @@ model Subject {
   icon        String? // UI - Fallback for lectures
 
   institutionId String
-  
+
   // N:M Relations
   departments Department[]
   classes     Class[]
@@ -225,7 +225,7 @@ model Subject {
 
 model Lecture {
   id String @id @default(uuid())
-  
+
   institutionId String
   classId       String
   subjectId     String
@@ -249,7 +249,7 @@ model Lecture {
   subject     Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   teacher     User        @relation("TeacherLectures", fields: [teacherId], references: [id])
 
-  sessions AttendanceSession[]
+  sessions    AttendanceSession[]
   attendances Attendance[] // Direct link for easier query? Yes.
 
   createdAt DateTime @default(now())
@@ -266,9 +266,9 @@ model AttendanceSession {
   institutionId String
   lectureId     String
 
-  remarks   String? // UI
+  remarks String? // UI
 
-  startTime DateTime @default(now())
+  startTime DateTime      @default(now())
   endTime   DateTime? // When the session was closed
   status    SessionStatus @default(ACTIVE)
 
@@ -288,29 +288,29 @@ model AttendanceSession {
 model Attendance {
   id String @id @default(uuid())
 
-  studentId     String
-  lectureId     String
-  sessionId     String? // Optional if we allow marking outside a session (manual fix)? But rule says "tied to lecture". Session is "time bound". Let's keep it nullable or required? Rule 6: "Linked to One Lecture".
-  
+  studentId String
+  lectureId String
+  sessionId String? // Optional if we allow marking outside a session (manual fix)? But rule says "tied to lecture". Session is "time bound". Let's keep it nullable or required? Rule 6: "Linked to One Lecture".
+
   // Denormalized fields for reporting
   institutionId String
   classId       String
   departmentId  String
 
-  status       AttendanceStatus
-  remarks      String? // UI
-  markedVia    String? // MANUAL, DEVICE, FACE
-  
-  deviceId     String?
+  status    AttendanceStatus
+  remarks   String? // UI
+  markedVia String? // MANUAL, DEVICE, FACE
+
+  deviceId       String?
   deviceVerified Boolean @default(false)
   faceVerified   Boolean @default(false)
 
-  student     User              @relation("StudentAttendances", fields: [studentId], references: [id], onDelete: Cascade)
-  lecture     Lecture           @relation(fields: [lectureId], references: [id], onDelete: Cascade)
+  student     User               @relation("StudentAttendances", fields: [studentId], references: [id], onDelete: Cascade)
+  lecture     Lecture            @relation(fields: [lectureId], references: [id], onDelete: Cascade)
   session     AttendanceSession? @relation(fields: [sessionId], references: [id]) // Optional link to specific session window
-  institution Institution       @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  device      Device?           @relation(fields: [deviceId], references: [id])
-  
+  institution Institution        @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+  device      Device?            @relation(fields: [deviceId], references: [id])
+
   faceCheck FaceVerification?
   override  AttendanceOverride?
 

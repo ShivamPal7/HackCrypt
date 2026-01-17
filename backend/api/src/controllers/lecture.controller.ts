@@ -3,7 +3,7 @@ import * as lectureService from '../services/lecture.service';
 import { sendResponse } from '../utils/response';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await lectureService.createLecture(req.body, req.user!.institutionId!);
+    const result = await lectureService.createLecture(req.body, req.user!);
     sendResponse(res, 201, 'Lecture created', result);
 };
 
