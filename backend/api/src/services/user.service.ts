@@ -28,7 +28,20 @@ export const getAllUsers = async (institutionId: string) => {
 };
 
 export const getUser = async (id: string, institutionId: string) => {
-    const user = await prisma.user.findUnique({ where: { id } });
+    const user = await prisma.user.findUnique({
+        where: { id },
+        include: {
+            institution: true,
+            taughtDepartments: true,
+            taughtClasses: true,
+            taughtLectures: true,
+            studentDepartment: true,
+            studentClass: true,
+            studentAttendances: true,
+            devices: true,
+            joinRequests: true,
+        }
+    });
     if (!user || user.institutionId !== institutionId) throw new ApiError(404, 'User not found');
     const { password, ...rest } = user;
     return rest;
