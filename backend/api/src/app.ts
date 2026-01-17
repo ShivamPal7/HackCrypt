@@ -15,6 +15,7 @@ import lectureRoutes from './routes/lecture.routes';
 import reportRoutes from './routes/report.routes';
 import auditRoutes from './routes/audit.routes';
 import metaRoutes from './routes/meta.routes';
+import uploadRoutes from './routes/upload.routes';
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/lectures', lectureRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/audit', auditRoutes);
 app.use('/api/meta', metaRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Error Handling
 app.use(errorHandler);
