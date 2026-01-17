@@ -1,6 +1,7 @@
 import prisma from '../config/prisma';
 import ApiError from '../utils/ApiError';
 import bcrypt from 'bcryptjs';
+import { Role } from '@prisma/client';
 
 export const createUser = async (data: any, institutionId: string) => {
     // Admin creating user for their institution
@@ -20,9 +21,14 @@ export const createUser = async (data: any, institutionId: string) => {
     return rest;
 };
 
-export const getAllUsers = async (institutionId: string) => {
+
+
+export const getAllUsers = async (institutionId: string, role?: Role) => {
+    const where: any = { institutionId };
+    if (role) where.role = role;
+
     return prisma.user.findMany({
-        where: { institutionId },
+        where,
         select: { id: true, name: true, email: true, role: true, isActive: true, avatarUrl: true, rollNo: true }
     });
 };

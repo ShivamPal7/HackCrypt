@@ -35,6 +35,7 @@ router.get('/:id/sessions', authorize([Role.TEACHER, Role.ADMIN]), asyncHandler(
 
 // Lecture Management
 router.post('/', authorize([Role.ADMIN]), validate(lectureValidator.createLectureSchema), asyncHandler(lectureController.create));
+router.get('/teacher/me', authorize([Role.ADMIN, Role.TEACHER]), asyncHandler(lectureController.getTeacherDashboard));
 router.get('/', authorize([Role.ADMIN, Role.TEACHER, Role.STUDENT]), asyncHandler(lectureController.getAll));
 router.get('/:id', authorize([Role.ADMIN, Role.TEACHER, Role.STUDENT]), asyncHandler(lectureController.get));
 router.put('/:id', authorize([Role.ADMIN]), validate(lectureValidator.updateLectureSchema), asyncHandler(lectureController.update));

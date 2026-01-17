@@ -7,8 +7,15 @@ export const createLecture = async (data: any, institutionId: string) => {
     const classData = await prisma.class.findUnique({ where: { id: data.classId } });
     if (!classData || classData.institutionId !== institutionId) throw new ApiError(404, 'Class not found in this institution');
 
-    const subjectData = await prisma.subject.findUnique({ where: { id: data.subjectId } });
+    const subjectData = await prisma.subject.findUnique({
+        where: { id: data.subjectId },
+        include: { classes: { select: { id: true } } }
+    });
     if (!subjectData || subjectData.institutionId !== institutionId) throw new ApiError(404, 'Subject not found in this institution');
+
+    // STRICT: Subject must be assigned to the Class
+    const isLinked = subjectData.classes.some(c => c.id === data.classId);
+    if (!isLinked) throw new ApiError(400, 'Subject is not assigned to this Class. Assign it first.');
 
     // Verify Teacher belongs to Institution (and ideally is assigned to department? But Admin can override)
     const teacher = await prisma.user.findUnique({ where: { id: data.teacherId } });
@@ -133,4 +140,59 @@ export const deleteLecture = async (id: string, institutionId: string) => {
 
     await prisma.lecture.delete({ where: { id } });
     return { message: 'Lecture deleted' };
+};
+
+export const getTeacherLectures = async (teacherId: string, institutionId: string) => {
+    const lectures = await prisma.lecture.findMany({
+        where: { teacherId, institutionId },
+        include: {
+            subject: { select: { name: true, code: true } },
+            class: {
+                select: {
+                    name: true,
+                    _count: { select: { students: true } }
+                }
+            },
+            attendances: {
+                select: { status: true }
+            }
+        },
+        orderBy: { startTime: 'desc' }
+    });
+
+    return lectures.map(l => {
+        const totalStudents = l.class._count.students;
+
+        // Calculate stats
+        const presentCount = l.attendances.filter(a => ['PRESENT', 'LATE'].includes(a.status)).length;
+        const attendancePercentage = totalStudents > 0 ? Math.round((presentCount / totalStudents) * 100) : 0;
+
+        const start = l.startTime.getTime();
+        const end = l.endTime.getTime();
+        const durationMinutes = Math.round((end - start) / (1000 * 60));
+
+        let progress = 0;
+        if (l.status === 'CLOSED') progress = 100;
+        else if (l.status === 'ACTIVE') {
+            const now = Date.now();
+            const elapsed = now - start;
+            progress = Math.min(100, Math.max(0, Math.round((elapsed / (end - start)) * 100)));
+        }
+
+        return {
+            id: l.id,
+            title: l.title || l.topic || l.subject.name,
+            subjectName: l.subject.name,
+            subjectCode: l.subject.code,
+            className: l.class.name,
+            startTime: l.startTime,
+            endTime: l.endTime,
+            status: l.status,
+            durationMinutes,
+            totalStudents,
+            presentCount,
+            attendancePercentage,
+            progress
+        };
+    });
 };

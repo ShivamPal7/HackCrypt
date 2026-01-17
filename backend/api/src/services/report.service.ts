@@ -61,7 +61,7 @@ export const getStudentAttendanceSummary = async (studentId: string, institution
 
     // 3. Get all Subjects for this Class
     const subjects = await prisma.subject.findMany({
-        where: { classId },
+        where: { classes: { some: { id: classId } } },
         select: { id: true }
     });
 
@@ -137,7 +137,12 @@ export const getStudentSubjectSummaries = async (studentId: string, institutionI
     const classId = student.studentClassId;
 
     // 2. Fetch Subjects (with optional Search)
-    const whereSubject: any = { classId, institutionId };
+    // 2. Fetch Subjects (with optional Search)
+    const whereSubject: any = {
+        institutionId,
+        classes: { some: { id: classId } }
+    };
+
     if (searchParams?.search) {
         whereSubject.name = { contains: searchParams.search, mode: 'insensitive' };
     }
@@ -145,7 +150,8 @@ export const getStudentSubjectSummaries = async (studentId: string, institutionI
     const subjects = await prisma.subject.findMany({
         where: whereSubject,
         include: {
-            class: {
+            classes: {
+                where: { id: classId },
                 select: {
                     _count: { select: { students: true } },
                     students: {
@@ -193,8 +199,8 @@ export const getStudentSubjectSummaries = async (studentId: string, institutionI
             subjectId: subject.id,
             subjectName: subject.name,
             subjectIcon: subject.icon,
-            totalStudents: subject.class._count.students,
-            studentIcons: subject.class.students.map(s => s.avatarUrl).filter(Boolean), // Classmates
+            totalStudents: subject.classes[0]?._count.students || 0,
+            studentIcons: subject.classes[0]?.students.map(s => s.avatarUrl).filter(Boolean) || [], // Classmates
             attendancePercentage: percentage,
             totalConducted,
             totalAttended
@@ -214,14 +220,17 @@ export const getStudentSubjectDetails = async (studentId: string, subjectId: str
     }
 
     // 2. Verify Subject & Class Link
+    // 2. Verify Subject & Class Link
     const subject = await prisma.subject.findUnique({
         where: { id: subjectId },
+        include: { classes: { select: { id: true } } }
     });
     if (!subject || subject.institutionId !== institutionId) {
         throw new ApiError(404, 'Subject not found');
     }
 
-    if (student.studentClassId !== subject.classId) {
+    const isLinked = subject.classes.some(c => c.id === student.studentClassId);
+    if (!isLinked) {
         throw new ApiError(403, 'Subject does not belong to your class');
     }
 

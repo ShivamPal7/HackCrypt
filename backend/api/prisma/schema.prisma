@@ -171,6 +171,7 @@ model Department {
   teachers User[]  @relation("DepartmentTeachers")
   students User[]  @relation("DepartmentStudents")
   classes  Class[]
+  subjects Subject[]
 
   createdAt DateTime @default(now())
 }
@@ -209,14 +210,13 @@ model Subject {
   icon        String? // UI - Fallback for lectures
 
   institutionId String
-  classId       String
-  // teacherId     String // Removed: A subject in a class might have a specific teacher, or is it defined by the Lecture? "Subject -> Lecture". Usually a Subject in a Class is taught by ONE teacher. But "Teacher -> Lectures". Let's keep teacherId here as the default teacher for this subject in this class.
-  // User spec: "A Class... subjects... lectures". 
-  // Let's keep it simple: Subject belongs to Class. Lectures belong to Subject+Class.
   
+  // N:M Relations
+  departments Department[]
+  classes     Class[]
+
   institution Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
-  class       Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
-  // teacher     User        @relation(fields: [teacherId], references: [id]) // Optional: Can add if needed for "Subject Teacher" role.
+  // classId removed (was 1:N)
 
   lectures Lecture[]
 

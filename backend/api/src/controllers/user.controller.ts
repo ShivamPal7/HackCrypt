@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import * as userService from '../services/user.service';
 import { sendResponse } from '../utils/response';
+import { Role } from '@prisma/client';
 
 export const create = async (req: Request, res: Response, next: NextFunction) => {
     const result = await userService.createUser(req.body, req.user!.institutionId!);
@@ -8,7 +9,8 @@ export const create = async (req: Request, res: Response, next: NextFunction) =>
 };
 
 export const getAll = async (req: Request, res: Response, next: NextFunction) => {
-    const result = await userService.getAllUsers(req.user!.institutionId!);
+    const role = req.query.role as Role | undefined;
+    const result = await userService.getAllUsers(req.user!.institutionId!, role);
     sendResponse(res, 200, 'Users retrieved', result);
 };
 
