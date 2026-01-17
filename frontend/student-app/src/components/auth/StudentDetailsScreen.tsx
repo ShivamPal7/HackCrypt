@@ -10,23 +10,29 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ProfileDropdown } from "../profile/ProfileDropdown";
 import { ProfileField } from "../profile/ProfileField";
 import { Button } from "../ui/Button";
+import { FaceVerification } from "./FaceVerification";
 
 export function StudentDetailsScreen() {
     const router = useRouter();
     const [rollNo, setRollNo] = useState("");
     const [department, setDepartment] = useState("");
     const [studentClass, setStudentClass] = useState("");
+    const [faceImages, setFaceImages] = useState<string[]>([]);
 
     const departments = ["Computer Science", "Information Technology", "Electronics & Communication", "Mechanical", "Civil"];
     const classes = ["Class A", "Class B", "Class C", "Class D"];
 
+    const isFormValid = rollNo && department && studentClass && faceImages.length === 5;
+
     const handleComplete = () => {
-        if (!rollNo || !department || !studentClass) {
+        if (!isFormValid) {
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
             return;
         }
 
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        // Here you would upload the images + data
+        console.log("Registration Complete", { rollNo, department, studentClass, faceImagesCount: faceImages.length });
         router.push("/registration-success");
     };
 
@@ -59,7 +65,7 @@ export function StudentDetailsScreen() {
                             More About You
                         </Text>
                         <Text className="text-muted-foreground text-lg font-inter-medium leading-relaxed">
-                            Please provide your academic details to complete your profile.
+                            Please provide your academic details and complete face verification.
                         </Text>
                     </Animated.View>
 
@@ -92,9 +98,18 @@ export function StudentDetailsScreen() {
                         </Animated.View>
 
                         <Animated.View entering={FadeInDown.delay(400).duration(400)}>
+                            <FaceVerification
+                                images={faceImages}
+                                onImagesChange={setFaceImages}
+                                maxImages={5}
+                            />
+                        </Animated.View>
+
+                        <Animated.View entering={FadeInDown.delay(500).duration(400)}>
                             <Button
-                                className="mt-6 shadow-lg shadow-primary/20"
+                                className={`mt-6 shadow-lg shadow-primary/20 ${!isFormValid ? 'opacity-50' : ''}`}
                                 onPress={handleComplete}
+                                disabled={!isFormValid}
                             >
                                 <View className="flex-row items-center justify-center space-x-2">
                                     <Text className="text-primary-foreground font-inter-semibold text-lg mr-2">Complete Registration</Text>
