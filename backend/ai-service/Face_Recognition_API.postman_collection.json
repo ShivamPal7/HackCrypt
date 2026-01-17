@@ -1,0 +1,167 @@
+{
+  "info": {
+    "_postman_id": "face-recognition-api-v2",
+    "name": "Face Recognition & Liveness Detection API",
+    "description": "Production FastAPI endpoints for face registration and verification",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["health"]
+            },
+            "description": "Check API status and model availability"
+          }
+        },
+        {
+          "name": "API Root",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": [""]
+            },
+            "description": "Get API info and available endpoints"
+          }
+        },
+        {
+          "name": "Get Configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/config",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["config"]
+            },
+            "description": "Get API configuration (thresholds, paths)"
+          }
+        },
+        {
+          "name": "Get Registered Faces",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:5000/registered-faces",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["registered-faces"]
+            },
+            "description": "List all registered face images"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Face Registration",
+      "item": [
+        {
+          "name": "Register Face with Name",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/register-face?person_name=john_doe",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["register-face"],
+              "query": [
+                {
+                  "key": "person_name",
+                  "value": "john_doe",
+                  "description": "Optional: Name of the person for labeling"
+                }
+              ]
+            },
+            "description": "Register a new face with optional person name\n\n**Requirements:**\n- Real face (liveness check required)\n- JPG, PNG, or HEIC format\n- Good lighting\n\n**Response (201):**\n```json\n{\n  \"success\": true,\n  \"message\": \"Face registered successfully\",\n  \"image_name\": \"john_doe_20260116_100000.jpg\",\n  \"embedding_saved\": true,\n  \"liveness_score\": 0.95\n}\n```"
+          }
+        },
+        {
+          "name": "Register Face (Auto-named)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/register-face",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["register-face"]
+            },
+            "description": "Register a face without custom name (auto-generates name with timestamp)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Face Verification",
+      "item": [
+        {
+          "name": "Verify Face",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:5000/verify-face",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "5000",
+              "path": ["verify-face"]
+            },
+            "description": "Verify if a face matches registered faces\n\n**Response (VERIFIED):**\n```json\n{\n  \"verified\": true,\n  \"confidence\": 0.92,\n  \"matched_image\": \"john_doe_20260116_100000.jpg\",\n  \"liveness_score\": 0.95,\n  \"distance\": 0.73\n}\n```\n\n**Response (NOT VERIFIED):**\n```json\n{\n  \"verified\": false,\n  \"confidence\": 0.45,\n  \"matched_image\": null,\n  \"liveness_score\": 0.88,\n  \"distance\": 1.05\n}\n```"
+          }
+        }
+      ]
+    }
+  ]
+}
